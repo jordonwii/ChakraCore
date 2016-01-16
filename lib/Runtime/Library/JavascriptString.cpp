@@ -1195,7 +1195,8 @@ case_2:
         if (!fAsciiJumpTable)
         {
             wchar_t const * start = inputStr;
-            wchar_t const * current = inputStr + len - 1;
+            int startIndex = min(position, len);
+            wchar_t const * current = inputStr + startIndex - 1;
             wchar_t const * searchStrEnd = searchStr + searchLen - 1;
             while (current >= start)
             {
