@@ -817,6 +817,64 @@ namespace Js
         return isPropertyDescriptorDefined;
     }
 
+    Var JavascriptObject::EntryGetOwnPropertyDescriptors(RecyclableObject* function, CallInfo callInfo, ...)
+    {
+        PROBE_STACK(function->GetScriptContext(), Js::Constants::MinStackDefault);
+
+        ARGUMENTS(args, callInfo);
+        ScriptContext* scriptContext = function->GetScriptContext();
+
+        Assert(!(callInfo.Flags & CallFlags_New));
+
+        RecyclableObject* obj = nullptr;
+
+
+        if (args.Info.Count < 2)
+        {
+            obj = RecyclableObject::FromVar(JavascriptOperators::ToObject(scriptContext->GetLibrary()->GetUndefined(), scriptContext));
+        }
+        else
+        {
+            // Convert the argument to object first
+            obj = RecyclableObject::FromVar(JavascriptOperators::ToObject(args[1], scriptContext));
+        }
+
+        // If the object is HostDispatch try to invoke the operation remotely
+        if (obj->GetTypeId() == TypeIds_HostDispatch)
+        {
+            Var result;
+            if (obj->InvokeBuiltInOperationRemotely(EntryGetOwnPropertyDescriptors, args, &result))
+            {
+                return result;
+            }
+        }
+
+        Var ownPropertyKeys = JavascriptOperators::GetOwnPropertyKeys(obj, scriptContext);
+        JavascriptArray *ownPropsArray = JavascriptArray::FromVar(ownPropertyKeys);
+
+        RecyclableObject* resultObj = scriptContext->GetLibrary()->CreateObject(true);
+        
+        PropertyDescriptor propDesc;
+        Var propName;
+
+        for (uint i = 0; i < ownPropsArray->GetLength(); i++)
+        {
+            ownPropsArray->DirectGetItemAt(i, &propName);
+            
+            PropertyRecord const * propertyRecord;
+            JavascriptConversion::ToPropertyKey(propName, scriptContext, &propertyRecord);
+
+            PropertyDescriptor newPropertyDescriptor = PropertyDescriptor();
+            newPropertyDescriptor.SetConfigurable(true);
+            newPropertyDescriptor.SetEnumerable(true);
+            newPropertyDescriptor.SetWritable(true);
+            newPropertyDescriptor.SetValue(JavascriptObject::GetOwnPropertyDescriptorHelper(obj, propName, scriptContext));
+
+            JavascriptOperators::DefineOwnPropertyDescriptor(resultObj, propertyRecord->GetPropertyId(), newPropertyDescriptor, true, scriptContext);
+        }
+        return resultObj;
+    }
+
     Var JavascriptObject::EntryGetPrototypeOf(RecyclableObject* function, CallInfo callInfo, ...)
     {
         PROBE_STACK(function->GetScriptContext(), Js::Constants::MinStackDefault);
