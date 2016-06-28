@@ -196,7 +196,6 @@
   <test>
     <default>
       <files>getOwnPropertyDescriptors.js</files>
-      <baseline>getOwnPropertyDescriptors.baseline</baseline>
     </default>
   </test>
   <test>
