@@ -852,26 +852,22 @@ namespace Js
         Var ownPropertyKeys = JavascriptOperators::GetOwnPropertyKeys(obj, scriptContext);
         JavascriptArray *ownPropsArray = JavascriptArray::FromVar(ownPropertyKeys);
 
-        RecyclableObject* resultObj = scriptContext->GetLibrary()->CreateObject(true);
+        RecyclableObject* resultObj = scriptContext->GetLibrary()->CreateObject(true, (Js::PropertyIndex) ownPropsArray->GetLength());
         
         PropertyDescriptor propDesc;
-        Var propName;
+        Var propKey;
 
         for (uint i = 0; i < ownPropsArray->GetLength(); i++)
         {
-            ownPropsArray->DirectGetItemAt(i, &propName);
+            ownPropsArray->DirectGetItemAt(i, &propKey);
             
             PropertyRecord const * propertyRecord;
-            JavascriptConversion::ToPropertyKey(propName, scriptContext, &propertyRecord);
+            JavascriptConversion::ToPropertyKey(propKey, scriptContext, &propertyRecord);
 
-            PropertyDescriptor newPropertyDescriptor = PropertyDescriptor();
-            newPropertyDescriptor.SetConfigurable(true);
-            newPropertyDescriptor.SetEnumerable(true);
-            newPropertyDescriptor.SetWritable(true);
-            newPropertyDescriptor.SetValue(JavascriptObject::GetOwnPropertyDescriptorHelper(obj, propName, scriptContext));
-
-            JavascriptOperators::DefineOwnPropertyDescriptor(resultObj, propertyRecord->GetPropertyId(), newPropertyDescriptor, true, scriptContext);
+			Var newDescriptor = JavascriptObject::GetOwnPropertyDescriptorHelper(obj, propKey, scriptContext);
+			resultObj->SetProperty(propertyRecord->GetPropertyId(), newDescriptor, PropertyOperation_None, nullptr);
         }
+
         return resultObj;
     }
 
