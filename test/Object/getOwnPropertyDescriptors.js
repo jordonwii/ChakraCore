@@ -4,9 +4,9 @@
 //-------------------------------------------------------------------------------------------------------
 
 
-
-
-WScript.LoadScriptFile("..\\UnitTestFramework\\UnitTestFramework.js");
+if (this.WScript && this.WScript.LoadScriptFile) { // Check for running in ch
+    this.WScript.LoadScriptFile("..\\UnitTestFramework\\UnitTestFramework.js");
+}
 
 var tests = [
     {
@@ -84,3 +84,6 @@ var tests = [
         }
     }
 ]
+
+
+testRunner.runTests(tests, { verbose: WScript.Arguments[0] != "summary" });
