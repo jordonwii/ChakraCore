@@ -2253,6 +2253,7 @@ void VisitFncDecls(ParseNode *fns, Fn action)
 
 FuncInfo* PreVisitFunction(ParseNode* pnode, ByteCodeGenerator* byteCodeGenerator)
 {
+
     // Do binding of function name(s), initialize function scope, propagate function-wide properties from
     // the parent (if any).
     FuncInfo* parentFunc = byteCodeGenerator->TopFuncInfo();
@@ -2869,6 +2870,12 @@ FuncInfo* PostVisitFunction(ParseNode* pnode, ByteCodeGenerator* byteCodeGenerat
         {
             parentFunc->GetParamScope()->ForceAllSymbolNonLocalReference(byteCodeGenerator);
         }
+
+        if (top->IsLambda() && (top->GetCallsEval() || top->GetChildCallsEval()))
+        {
+            parentFunc->argumentsSymbol->SetHasNonLocalReference();
+        }
+
         parentFunctionBody->SetHasDoneAllNonLocalReferenced(true);
     }
 

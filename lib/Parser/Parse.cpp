@@ -4506,7 +4506,7 @@ ParseNodePtr Parser::ParseFncDecl(ushort flags, LPCOLESTR pNameHint, const bool 
     // binding of "arguments.  To ensure the arguments object of the enclosing
     // non-lambda function is loaded propagate the UsesArguments flag up to
     // the parent function
-    if ((flags & fFncLambda) != 0 && pnodeFnc->sxFnc.UsesArguments())
+    if ((flags & fFncLambda) != 0 && (pnodeFnc->sxFnc.UsesArguments() || pnodeFnc->sxFnc.CallsEval()))
     {
         if (pnodeFncParent != nullptr)
         {
