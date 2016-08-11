@@ -2481,6 +2481,11 @@ FuncInfo* PostVisitFunction(ParseNode* pnode, ByteCodeGenerator* byteCodeGenerat
         {
             top->byteCodeFunction->SetCapturesThis();
         }
+        if (top->GetCallsEval())
+        {
+            byteCodeGenerator->FindEnclosingNonLambda()->SetHasArguments(true);
+            byteCodeGenerator->FindEnclosingNonLambda()->SetHasHeapArguments(true);
+        }
     }
 
     // If this is a named function expression and has deferred child, mark has non-local reference.
@@ -2869,6 +2874,12 @@ FuncInfo* PostVisitFunction(ParseNode* pnode, ByteCodeGenerator* byteCodeGenerat
         {
             parentFunc->GetParamScope()->ForceAllSymbolNonLocalReference(byteCodeGenerator);
         }
+
+        if (top->IsLambda() && top->GetCallsEval())
+        {
+            byteCodeGenerator->FindEnclosingNonLambda()->GetArgumentsSymbol()->SetHasNonLocalReference();
+        }
+
         parentFunctionBody->SetHasDoneAllNonLocalReferenced(true);
     }
 
