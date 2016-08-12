@@ -2488,6 +2488,14 @@ FuncInfo* PostVisitFunction(ParseNode* pnode, ByteCodeGenerator* byteCodeGenerat
         {
             top->byteCodeFunction->SetEnclosedByGlobalFunc();
         }
+
+        if (top->GetCallsEval() && !enclosingNonLambda->IsGlobalFunction()
+            && enclosingNonLambda->GetArgumentsSymbol() != nullptr)
+        {
+            enclosingNonLambda->SetHasArguments(true);
+            enclosingNonLambda->SetHasHeapArguments(true);
+            enclosingNonLambda->GetArgumentsSymbol()->SetHasNonLocalReference();
+        }
     }
 
     // If this is a named function expression and has deferred child, mark has non-local reference.
